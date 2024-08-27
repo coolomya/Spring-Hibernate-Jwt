@@ -88,7 +88,7 @@ public class AccountController {
     }
     
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody UserEntity authenticationRequest) throws Exception {
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody UserEntity authenticationRequest){
 
     	System.out.println("Inside authenticate");
 		try {
@@ -98,12 +98,15 @@ public class AccountController {
 			);
 		}
 		catch (BadCredentialsException e) {
-			throw new Exception("Incorrect username or password", e);
+			System.out.println("Incorrect username or password");
+			e.printStackTrace();
 		}
 
 		System.out.println("B4 loadUserByUsername");
-		final UserDetails userDetails = userDetailsService
-				.loadUserByUsername(authenticationRequest.getUsername());
+		final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
+		if (userDetails == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user not found");
+		}
 
 		final String jwt = jwtTokenUtil.generateToken(userDetails);
 
